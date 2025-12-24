@@ -689,11 +689,7 @@ video {
 
     
     
-    <video id="popupVideo"
-      muted
-      playsinline
-      preload="auto">
-    </video>
+    <video id="popupVideo" muted playsinline preload="metadata"></video>
 </div>
 
 <script>
@@ -762,13 +758,17 @@ const loading = document.getElementById("videoLoading");
 
   
 closeBtn.onclick = closePopup;
+const bgVideo = document.getElementById("bgVideo");
 
 function openPopup(id) {
   if (autoCloseTimeout) {
     clearTimeout(autoCloseTimeout);
     autoCloseTimeout = null;
   }
-
+  // ✅ PAUSE VIDEO MAIN NGAY
+  if (bgVideo && !bgVideo.paused) {
+    bgVideo.pause();
+  }
   // ✅ HIỆN LOADING – main video vẫn chạy
   loading.style.display = "flex";
 
@@ -806,6 +806,10 @@ function closePopup() {
   popupVideo.pause();
   popupVideo.removeAttribute("src");
   popupVideo.load();
+
+  if (bgVideo) {
+    bgVideo.play().catch(() => {});
+  }
 }
 
 
