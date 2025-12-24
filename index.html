@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Christmas Tree (Version 3)</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+/* MAIN WRAPPER */
+#app {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh; /* CHUẨN 100% CHIỀU CAO iPAD */
+  max-width: 1620px;
+  max-height: 2160px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* BACKGROUND VIDEO */
+#bgVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* hoặc contain if cần */
+}
+
+/* HOTSPOT */
+.hotspot {
+  transform: translate(-50%, -50%);
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+@keyframes float {
+  0% { transform: translate(-50%, -50%) translateY(0) rotate(-2deg); }
+  50% { transform: translate(-50%, -50%) translateY(-8px) rotate(2deg); }
+  100% { transform: translate(-50%, -50%) translateY(0) rotate(-2deg); }
+}
+
+/* POPUP OVERLAY */
+#popupOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 300;
+}
+
+#popupBox {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  max-width: 1620px;
+  max-height: 2160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* CLOSE BUTTON */
+#closeBtn {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+
+  /* 🎄 VÀNG ĐỒNG ĐẬM – KHÔNG CHÓI */
+  background: radial-gradient(
+    circle at top left,
+    #d1a24b 0%,
+    #b8832f 65%,
+    #a87325 100%
+  );
+
+  /* 🌲 VIỀN XANH THÔNG ĐẬM */
+  border: 3px solid #1e5f46;
+
+  /* ✖️ DẤU X – NÂU ĐẬM */
+  color: #2f2414;
+
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  z-index: 400;
+
+  /* ✨ ĐỔ BÓNG NHẸ – KHÔNG GLOW */
+  box-shadow:
+    0 3px 6px rgba(0,0,0,0.35),
+    inset 0 1px 2px rgba(255,255,255,0.25);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#closeBtn:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 5px 10px rgba(0,0,0,0.45),
+    inset 0 1px 3px rgba(255,255,255,0.35);
+}
+
+
+
+
+/* POPUP VIDEO */
+#popupVideo {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  z-index: 10;
+}
+  
+/* TEXT */
+.popupText {
+  font-family: 
+    "Myriad Pro",
+    "MyriadPro",
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  letter-spacing: -0.02em;
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 50;
+  pointer-events: none;
+
+  /* responsive font size */
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.15;
+  font-weight: 700;
+  color: #111;
+
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  -webkit-text-stroke: 1px rgba(255,255,255,0.6);
+}
+.popupText .giftName {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.popupText.show {
+  animation: popupTextReveal 0.6s ease-out forwards;
+}
+
+@keyframes popupTextReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* SNOW */
+.snowflake {
+  position: absolute;
+  top: -10px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-20px); opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { transform: translateY(110vh); opacity: 0.3; }
+}
+
+/* FIREWORK PARTICLE */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 1;
+  width: 12px;
+  height: 12px;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
+  transform: translate(0, 0) scale(0.4);
+  animation: explode 1.2s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes explode {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(1.2);
+    opacity: 0;
+  }
+}
+/* =========================================================
+   ==============    MOBILE ≤ 768px    =====================
+========================================================= */
+@media (max-width: 767px) {
+  #bgVideo,
+  #popupVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important; /* Giữ nguyên tỉ lệ, không crop 2 bên */
+    background: #000; /* giúp top/bottom có màu đen */
+  }
+
+  #app {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #popupBox {
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+  }
+  .hotspot {
+    width: 80px;
+    height: 80px;
+  }
+  .popupText {
+    font-size: clamp(20px, 3vw, 35px);
+  }
+  /* #closeBtn {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: 180px;
+    right: 20px;
+    border-width: 3px;
+    font-size: 30px;
+  } */
+  #closeBtn {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+    top: 20px;
+    right: 20px;
+    border-width: 2px;
+  }
+  #text7 {
+  justify-content: flex-start;   /* đẩy nội dung lên trên */
+  align-items: flex-start;       /* canh trái */
+
+  text-align: left;
+
+  padding-left: 25%;
+  padding-top: 54%;
+  font-size: 26px !important;
+}
+  .loading-text {
+    font-size: 20px !important;      /* 👈 to hơn, rất vừa iPad */
+  }
+
+  .loader-ring {
+    width: 25px !important;          /* nếu muốn loader to hơn cho cân */
+    height: 25px !important;
+    border-width: 5px !important;
+  }
+}
+/* =========================================================
+   ==============   768px ≤ TABLET ≤ 1024px    =====================
+========================================================= */
+@media (min-width: 767px) and (max-width: 1024px) {
+  .hotspot {
+    width: 130px;
+    height: 130px;
+  }
+
+  #closeBtn {
+    top: 5%;
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+  }
+
+  .popupText {
+    /* font-size: clamp(30px, 4vw, 454545); */
+    font-size: 33px !important; 
+    line-height: 1.2;
+  }
+  .giftImage {
+    top: 80%;        
+    width: 30%;       
+  }
+  #text7 {
+    position: absolute !important;
+
+    top: 40%;      /* CỐ ĐỊNH */
+    left: 25%;     /* CỐ ĐỊNH */
+    width: 46%;    /* CỐ ĐỊNH */
+
+    display: block !important;
+
+    text-align: left;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    /* font-size: 24px !important; */
+    /* line-height: 1.35; */
+
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .loading-text {
+    font-size: 40px !important;      /* 👈 to hơn, rất vừa iPad */
+  }
+
+  .loader-ring {
+    width: 50px !important;          /* nếu muốn loader to hơn cho cân */
+    height: 50px !important;
+    border-width: 15px !important;
+  }
+}
+/* =========================================================
+   LAPTOP 1025px → 1366px
+========================================================= */
+@media (min-width: 1025px) and (max-width: 1366px) {
+  .hotspot {
+    width: 130px;
+    height: 130px;
+  }
+
+  #closeBtn {
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    top: 30px;
+    right: 475px;
+    border-width: 3px;
+    font-size: 30px;
+  }
+  
+  .popupText {
+    font-size: clamp(30px, 3vw, 35px);
+  }
+  #text7 {
+  justify-content: flex-start;   /* đẩy nội dung lên trên */
+  align-items: flex-start;       /* canh trái */
+
+  text-align: left;
+
+  padding-left: 25%;
+  padding-top: 54%;
+  font-size: 26px !important;
+}
+  .loading-text {
+    font-size: 50px !important;      /* 👈 to hơn, rất vừa iPad */
+  }
+
+  .loader-ring {
+    width: 60px !important;          /* nếu muốn loader to hơn cho cân */
+    height: 60px !important;
+    border-width: 15px !important;
+  }
+}
+/* =========================================================
+   PC 1367px → 1919px
+========================================================= */
+@media (min-width: 1367px) and (max-width: 1919px) {
+  .hotspot {
+    width: 130px;
+    height: 130px;
+    filter: blur(12px);
+  }
+
+  #closeBtn {
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    top: 30px;
+    right: 475px;
+    border-width: 3px;
+    font-size: 30px;
+  }
+
+  .popupText {
+    font-size: clamp(30px, 2.5vw, 40px);
+    line-height: 1.1;
+  }
+  #text7 {
+  justify-content: flex-start;   /* đẩy nội dung lên trên */
+  align-items: flex-start;       /* canh trái */
+
+  text-align: left;
+
+  padding-left: 25%;
+  padding-top: 54%;
+  font-size: 26px !important;
+}
+   .loading-text {
+    font-size: 50px !important;      /* 👈 to hơn, rất vừa iPad */
+  }
+
+  .loader-ring {
+    width: 60px !important;          /* nếu muốn loader to hơn cho cân */
+    height: 60px !important;
+    border-width: 15px !important;
+  }
+}
+/* =========================================================
+   DESKTOP ≥ 1920px
+========================================================= */
+@media (min-width: 1920px) {
+  #app {
+    max-width: 1800px;
+    max-height: 2400px;
+  }
+
+  .hotspot {
+    width: 130px;
+    height: 130px;
+  }
+
+  #closeBtn {
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    top: 30px;
+    right: 475px;
+    border-width: 3px;
+    font-size: 30px;
+  }
+
+  .popupText {
+    font-size: clamp(30px, 2vw, 50px);
+  }
+  #text7 {
+  justify-content: flex-start;   /* đẩy nội dung lên trên */
+  align-items: flex-start;       /* canh trái */
+
+  text-align: left;
+
+  padding-left: 25%;
+  padding-top: 54%;
+  font-size: 26px !important;
+}
+   .loading-text {
+    font-size: 50px !important;      /* 👈 to hơn, rất vừa iPad */
+  }
+
+  .loader-ring {
+    width: 60px !important;          /* nếu muốn loader to hơn cho cân */
+    height: 60px !important;
+    border-width: 15px !important;
+  }
+}
+/* =========================================================
+   VIDEO FIX CHUNG — ÁP DỤNG CHO TẤT CẢ ≥ 1024px
+   Video luôn vào giữa, không crop, thừa hai bên trái/phải OK
+========================================================= */
+@media (min-width: 1025px) {
+  #bgVideo {
+    width: auto !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    background: #000;
+    display: block;       /* để margin auto hoạt động */
+    margin: 0 auto;       /* căn giữa trái phải */
+  }
+
+  #popupVideo {
+    width: auto !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    background: #000;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #app {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+  }
+
+}
+.giftImage {
+  position: absolute;
+  height: auto;
+
+  z-index: 80;
+  pointer-events: none;
+
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px) rotate(14deg);
+
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+  #gift1{
+      width: 40%;
+  max-width: 340px;
+      left: 50%;
+      top: 63%;
+  }
+  #gift2{
+      width: 40%;
+  max-width: 340px;
+      left: 50%;
+      top: 63%;
+  }
+  #gift3{
+      width: 40%;
+  max-width: 340px;
+    left: 50%;
+      top: 59%;
+  }
+  #gift4{
+      width: 40%;
+  max-width: 340px;
+    left: 50%;
+      top: 61%;
+  }
+  #gift5{
+      width: 40%;
+  max-width: 340px;
+    left: 50%;
+      top: 57%;
+  }
+  #gift6{
+      width: 40%;
+  max-width: 340px;
+    left: 50%;
+      top: 57%;
+  }
+  #gift7{
+      width: 40%;
+  max-width: 500px;
+    left: 72%;
+      top: 46%;
+    transform: translateX(-50%) translateY(5px) rotate(0deg) !important;
+  }
+  /* loading icon */
+
+.video-loading {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0,0,0,0.25); /* ⭐ mờ nhẹ – vẫn thấy video main */
+  z-index: 9999;
+
+  pointer-events: none; /* không chặn click */
+}
+
+
+.loading-text {
+  color: #fff;
+  font-size: 18px;
+  margin-top: 14px;
+  letter-spacing: 0.4px; /* chữ sát lại tự nhiên */
+}
+
+/* chữ */
+.letter-step span {
+  display: inline-block;
+  opacity: 0.85;               /* ✅ rõ hơn */
+  color: #fff;
+  font-weight: 600;
+
+  animation: letterStep 2.8s infinite;
+  text-shadow: 0 0 8px rgba(255,255,255,0.45); /* ✅ nổi chữ */
+}
+
+
+/* SPACE – KHỐNG CHẾ KHOẢNG CÁCH */
+.letter-step .space {
+  display: inline-block;
+  width: 0;
+  margin: 0 4px;    /* ⭐ khoảng cách TỰ NHIÊN */
+  animation: none;
+}
+
+
+/* delay từng chữ */
+.letter-step span:nth-child(1)  { animation-delay: 0s; }
+.letter-step span:nth-child(2)  { animation-delay: 0.2s; }
+.letter-step span:nth-child(3)  { animation-delay: 0.4s; }
+.letter-step span:nth-child(4)  { animation-delay: 0.6s; }
+.letter-step span:nth-child(6)  { animation-delay: 0.8s; }
+.letter-step span:nth-child(7)  { animation-delay: 1.0s; }
+.letter-step span:nth-child(9)  { animation-delay: 1.2s; }
+.letter-step span:nth-child(10) { animation-delay: 1.4s; }
+.letter-step span:nth-child(11) { animation-delay: 1.6s; }
+.letter-step span:nth-child(12) { animation-delay: 1.8s; }
+.letter-step span:nth-child(13) { animation-delay: 2.0s; }
+.letter-step span:nth-child(14) { animation-delay: 2.2s; }
+.letter-step span:nth-child(15) { animation-delay: 2.4s; }
+
+
+@keyframes letterStep {
+  0% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  12% {
+    transform: translateY(-4px);  /* 👈 NHẸ HƠN */
+    opacity: 1;
+  }
+  24% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+}
+.svg-loader { width: 65px; height: 65px; margin-right: 10px;} .svg-loader circle { fill: none; stroke: #ffffff; /* ✅ trắng */ stroke-width: 6; stroke-linecap: round; stroke-dasharray: 90 150; animation: svgSpin 1.1s linear infinite; transform-origin: 50% 50%; } @keyframes svgSpin { to { transform: rotate(360deg); } }
+
+</style>
+</head>
+  
+<body>
+  
+<div id="app">
+  <video id="bgVideo"
+    src="https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765794137/ipad-boc_tham-01_2_tlcf37.mp4"
+    autoplay loop muted playsinline>
+  </video>
+</div>
+ <!-- LOADING -->
+    <div id="videoLoading" class="video-loading">
+      <svg class="svg-loader" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="20"></circle>
+      </svg> <span>  </span>
+      <div class="loading-text letter-step">
+        <span>  Đ</span><span>a</span><span>n</span><span>g  </span>
+        <!-- <span class="space"></span> -->
+        <span>m</span><span>ở  </span>
+        <!-- <span class="space"></span> -->
+        <span>q</span><span>u</span><span>à</span>
+        <span>.</span><span>.</span><span>.</span>
+
+      </div>
+
+    </div>
+<!-- POPUP -->
+<div id="popupOverlay">
+
+  <div id="popupBox">
+    <div id="closeBtn">✕</div>
+
+    
+    
+    <video id="popupVideo"
+      muted
+      playsinline
+      preload="auto">
+    </video>
+</div>
+
+<script>
+  let isClickLocked = false;
+
+  const popupVideos = {
+  1: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944138/FreeMax_gz55cp.mp4",
+  2: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765936498/ipad-boc_tham-02_1_gew2qs.mp4",
+  3: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944138/GloryAir_vugs8p.mp4",
+  4: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944135/TravelGo_rmpkyr.mp4",
+  5: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944136/Comfy_lyqm1o.mp4",
+  6: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944140/Lumbar_qg70b0.mp4",
+  7: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944136/Voucher_uubv0t.mp4",
+};
+/* =====================================================
+      HOTSPOTS
+===================================================== */
+const ornamentPositions = [
+  { id: 1, x: "50%", y: "13%" },
+  { id: 2, x: "50%", y: "29%" },
+  { id: 3, x: "62%", y: "43%" },
+  { id: 4, x: "37%", y: "51%" },
+  { id: 7, x: "70%", y: "62%" },
+  { id: 5, x: "27%", y: "68%" },
+  { id: 6, x: "47%", y: "70%" },
+];
+
+const app = document.getElementById("app");
+
+ornamentPositions.forEach(pos => {
+  const dot = document.createElement("div");
+  dot.className = "hotspot";
+  dot.style.left = pos.x;
+  dot.style.top = pos.y;
+  dot.onclick = () => {
+  // ⛔ nếu đang bị khóa click thì bỏ qua
+  if (isClickLocked) return;
+
+  // 🔒 khóa click cho iPad này
+  isClickLocked = true;
+
+  openPopup(pos.id); // popup hiện ngay
+
+  sendToAPI(pos.id);
+  // ⏳ đợi 3 giây rồi mới gửi data (tránh spam)
+  // setTimeout(() => {
+  //   sendToN8N(pos.id);
+  // }, 3000);
+
+  // 🔓 mở khóa sau 3 giây
+  setTimeout(() => {
+    isClickLocked = false;
+  }, 3000);
+};
+
+
+
+  app.appendChild(dot);
+});
+
+/* =====================================================
+      POPUP
+===================================================== */
+let autoCloseTimeout = null;
+  
+const popupOverlay = document.getElementById("popupOverlay");
+const closeBtn = document.getElementById("closeBtn");
+
+const loading = document.getElementById("videoLoading");
+//const FAKE_VIDEO_DELAY = 10000; // 10 giây – chỉnh bao nhiêu tùy thích
+  
+closeBtn.onclick = closePopup;
+
+function openPopup(id) {
+  if (autoCloseTimeout) {
+    clearTimeout(autoCloseTimeout);
+    autoCloseTimeout = null;
+  }
+
+  // ✅ HIỆN LOADING – main video vẫn chạy
+  loading.style.display = "flex";
+
+  const popupVideo = document.getElementById("popupVideo");
+  const videoSrc = popupVideos[id];
+  if (!popupVideo || !videoSrc) return;
+
+  // reset popup video
+  popupVideo.pause();
+  popupVideo.removeAttribute("src");
+  popupVideo.load();
+
+  popupVideo.src = videoSrc;
+  popupVideo.currentTime = 0;
+
+  popupVideo.oncanplay = () => {
+    loading.style.display = "none";        // ẨN LOADING
+    popupOverlay.style.display = "flex";   // HIỆN POPUP
+    popupVideo.play();
+  };
+
+  popupVideo.load();
+
+  autoCloseTimeout = setTimeout(closePopup, 15000);
+}
+// function openPopup(id) {
+//   if (autoCloseTimeout) {
+//     clearTimeout(autoCloseTimeout);
+//     autoCloseTimeout = null;
+//   }
+
+//   // ✅ HIỆN LOADING – main video vẫn chạy
+//   loading.style.display = "flex";
+
+//   const popupVideo = document.getElementById("popupVideo");
+//   const videoSrc = popupVideos[id];
+//   if (!popupVideo || !videoSrc) return;
+
+//   // reset popup video
+//   popupVideo.pause();
+//   popupVideo.removeAttribute("src");
+//   popupVideo.load();
+
+//   // ⏳ GIẢ LẬP LOAD CHẬM 10s
+//   setTimeout(() => {
+//     popupVideo.src = videoSrc;
+//     popupVideo.currentTime = 0;
+
+//     popupVideo.oncanplay = () => {
+//       loading.style.display = "none";        // ẨN LOADING
+//       popupOverlay.style.display = "flex";   // HIỆN POPUP
+//       popupVideo.play();
+//     };
+
+//     popupVideo.load();
+//   }, FAKE_VIDEO_DELAY);
+
+//   autoCloseTimeout = setTimeout(closePopup, 15000 + FAKE_VIDEO_DELAY);
+// }
+
+
+
+function closePopup() {
+  popupOverlay.style.display = "none";
+
+  if (autoCloseTimeout) {
+    clearTimeout(autoCloseTimeout);
+    autoCloseTimeout = null;
+  }
+
+  popupVideo.pause();
+  popupVideo.removeAttribute("src");
+  popupVideo.load();
+}
+
+
+function getVideoMetrics() {
+  const video = document.getElementById("bgVideo");
+  const container = document.getElementById("app");
+
+  const videoRatio = video.videoWidth / video.videoHeight;
+  const containerRatio = container.offsetWidth / container.offsetHeight;
+
+  let displayWidth, displayHeight, offsetX, offsetY;
+
+  if (videoRatio > containerRatio) {
+    // Video quá rộng → fit theo chiều rộng container
+    displayWidth = container.offsetWidth;
+    displayHeight = displayWidth / videoRatio;
+    offsetX = 0;
+    offsetY = (container.offsetHeight - displayHeight) / 2;
+  } else {
+    // Video quá cao → fit theo chiều cao container
+    displayHeight = container.offsetHeight;
+    displayWidth = displayHeight * videoRatio;
+    offsetX = (container.offsetWidth - displayWidth) / 2;
+    offsetY = 0;
+  }
+
+  return { displayWidth, displayHeight, offsetX, offsetY };
+}
+function updateHotspotPositions() {
+  const { displayWidth, displayHeight, offsetX, offsetY } = getVideoMetrics();
+
+  ornamentPositions.forEach((pos, index) => {
+    const dot = document.getElementsByClassName("hotspot")[index];
+
+    const x = (parseFloat(pos.x) / 100) * displayWidth + offsetX;
+    const y = (parseFloat(pos.y) / 100) * displayHeight + offsetY;
+
+    dot.style.left = x + "px";
+    dot.style.top = y + "px";
+  });
+}
+bgVideo.addEventListener("loadedmetadata", updateHotspotPositions);
+window.addEventListener("resize", updateHotspotPositions);
+document.querySelectorAll(".giftImage").forEach(img => {
+  img.style.opacity = "0";
+});
+  
+const giftMap = {
+  2: "01 gối Kymdan PressureFree Air (trị giá 2.678.000 VND)",
+  1: "01 gối Kymdan PressureFree Max (trị giá 3.816.000 VND)",
+  3: "01 gối Kymdan Glory Air (trị giá 2.571.000 VND)",
+  6: "01 gối Kymdan LumbarLatex Travel (trị giá 1.812.000 VND)",
+  4: "01 gối Kymdan TravelGo (trị giá 1.754.000 VND)",
+  5: "01 gối Kymdan Comfy (trị giá 1.826.000 VND)",
+  7: "01 bộ 2 Voucher (giảm thêm 500.000 VND khi mua nệm + giảm thêm 300.000 VND khi mua gối)"
+};
+  
+  //n8n
+function sendToAPI(giftId) {
+  fetch("https://script.google.com/macros/s/AKfycbwYEmeROCz17LuVP-o8QCwB6EOTcCBnq5mjMhAnqVZ9RiBWecIHWaSes7D3aFYW7TQn/exec", {
+    method: "POST",
+    mode: "no-cors", // ✅ FIX CORS
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      giftId: giftId,
+      giftName: giftMap[giftId] || "Quà bí mật",
+      page: "christmas-tree",
+      device: getDeviceName(), // ✅ TÊN iPad
+      userAgent: navigator.userAgent,
+      time: new Date().toISOString()
+    })
+  });
+}
+//lấy api thiết bị 
+  function getDeviceName() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("device") || "unknown_device";
+}
+
+
+</script>
+</body>
+</html>
