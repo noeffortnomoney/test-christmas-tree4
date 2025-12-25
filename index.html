@@ -660,10 +660,16 @@ video {
 <body>
   
 <div id="app">
-  <video id="bgVideo"
-    src="https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765794137/ipad-boc_tham-01_2_tlcf37.mp4"
-    autoplay loop muted playsinline>
-  </video>
+  <video
+  id="bgVideo"
+  src="/assets/Video/ipad-boc tham-01_2.mp4"
+  autoplay
+  loop
+  muted
+  playsinline
+  preload="metadata">
+</video>
+
 </div>
  <!-- LOADING -->
     <div id="videoLoading" class="video-loading">
@@ -696,14 +702,14 @@ video {
   let isClickLocked = false;
 
   const popupVideos = {
-  1: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944138/FreeMax_gz55cp.mp4",
-  2: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765936498/ipad-boc_tham-02_1_gew2qs.mp4",
-  3: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944138/GloryAir_vugs8p.mp4",
-  4: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944135/TravelGo_rmpkyr.mp4",
-  5: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944136/Comfy_lyqm1o.mp4",
-  6: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944140/Lumbar_qg70b0.mp4",
-  7: "https://res.cloudinary.com/ddcbvgrxw/video/upload/v1765944136/Voucher_uubv0t.mp4",
-};
+    1: "/assets/Video/FreeMax.mp4",
+    2: "/assets/Video/FreeAir.mp4",
+    3: "/assets/Video/GloryAir.mp4",
+    4: "/assets/Video/TravelGo.mp4",
+    5: "/assets/Video/Comfy.mp4",
+    6: "/assets/Video/Lumbar.mp4",
+    7: "/assets/Video/Voucher.mp4",
+  };
 /* =====================================================
       HOTSPOTS
 ===================================================== */
@@ -919,7 +925,22 @@ function processQueue() {
   }, 1500); // ⭐ 1.5s là ngưỡng an toàn cho iPad
 }
 
-
 </script>
+
+<!-- SW - REGISTER SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('✅ Service Worker registered:', reg.scope);
+      })
+      .catch(err => {
+        console.error('❌ Service Worker error:', err);
+      });
+  });
+}
+</script>
+
 </body>
 </html>
