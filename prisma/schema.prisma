@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GiftClaim {
+  id           String   @id @db.Uuid
+  giftId       Int      @map("gift_id")
+  giftName     String   @map("gift_name") @db.VarChar(200)
+  device       String   @db.VarChar(40)
+  userAgent    String   @map("user_agent") @db.VarChar(300)
+  claimedAt    DateTime @map("claimed_at")
+  telegramSent Boolean  @default(false) @map("telegram_sent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([claimedAt(sort: Desc)], map: "idx_gift_claims_claimed")
+  @@index([giftId, claimedAt(sort: Desc)], map: "idx_gift_claims_gift_claimed")
+  @@index([device, claimedAt(sort: Desc)], map: "idx_gift_claims_device_claimed")
+  @@map("gift_claims")
+}
